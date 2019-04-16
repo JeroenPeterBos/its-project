@@ -1,3 +1,5 @@
 .venv
 .vscode
 output
+old_output
+*.pyc

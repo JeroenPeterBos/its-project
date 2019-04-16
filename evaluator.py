@@ -4,6 +4,7 @@ from statistics import Ensamble
 from compression import Arithmetic, BossArithmetic
 
 columns = [
+    'name',
     'EntropyEx',
     'MessageEx',
     'MessageLengthEx',
@@ -20,7 +21,8 @@ columns = [
     'StandardDecodingMatchOnEOF',
     'BossEncoding',
     'BossEncodingLength',
-    'BossDecodingMatch'
+    'BossDecodingMatch',
+    'BossDecoded'
 ]
 
 ensambles = [
@@ -39,7 +41,8 @@ ensambles = [
     ('abc_3_3_10', Ensamble(['a','b','c'],[f(3,10),f(3,10),f(4,10)])),
 ]
 
-lengths = list(range(3,10))
+lengths = list(range(10,20))
+i = -1
 
 all_df = pandas.DataFrame(columns=columns)
 for name, ensamble in ensambles:
@@ -54,14 +57,15 @@ for name, ensamble in ensambles:
             messages = new_messages
         
         ensamble2 = ensamble.copy()
-        ensamble2.expand('.', f(1,l))
+        ensamble2.expand('.', f(1,l+1))
 
         standard_ar = Arithmetic(ensamble)
         standard_ar_inc = Arithmetic(ensamble2)
         boss_ar = BossArithmetic(ensamble2)
 
         for message in messages:
-            print("Ensamble: {:<10} Message: {:<15}".format(name,message))
+            i += 1
+            print("Id: {:<5} Ensamble: {:<10} Message: {:<15}".format(i, name,message))
             standard_enc = standard_ar.encode(message)
             standard_dec = standard_ar.decode(standard_enc, len(message))
             
@@ -72,6 +76,7 @@ for name, ensamble in ensambles:
             boss_dec = boss_ar.decode(boss_enc)
             
             row = [
+                name,
                 ensamble.entropy(),
                 message,
                 len(message),
@@ -88,7 +93,8 @@ for name, ensamble in ensambles:
                 1 if standard_dec_eof == message + '.' else 0,
                 boss_enc,
                 len(boss_enc),
-                1 if boss_dec == message + '.' else 0
+                1 if boss_dec == message + '.' else 0,
+                boss_dec
             ]
             df.loc[len(df.index)] = row
             all_df.loc[len(all_df.index)] = row
